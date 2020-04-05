@@ -1,4 +1,4 @@
-package divideAndConquer;
+package com.atguigu.divideAndConquer;
 
 /**
  * @Date 2020/4/5 10:31
