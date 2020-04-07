@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * author:w_liangwei
  * date:2020/4/7
- * Description: 克鲁斯卡尔算法构建最小生成树
+ * Description: 克鲁斯卡尔算法构建最小生成树,对图中环路的检测使用了并查集来实现
  * 1..将边按照权值从小到大的顺序加入到生成树
  * 2. 加入时判断该边是否会和原有生成树构成回路，构成则不添加继续找下一个次小的
  * 3. 由于n个顶点需要n-1条边构建最小生成树，所以添加边到达n-1时则最小生成树构建完成
@@ -100,7 +100,11 @@ class Graph {
      * 克鲁斯卡尔构建最小生成树
      */
     public void kruskal() {
-        int[] ends = new int[vertexs.length];
+        //初始化变量用于检测是否构成环路
+        int edgeNum = vertexs.length;
+        int[] parent = new int[edgeNum];
+        int[] rank = new int[edgeNum];
+        init(parent, rank);
         //存放已经跟随边加入生成树中的顶点
         Edata[] minTree = new Edata[vertexs.length];
         //获取边并对边进行排序
@@ -116,15 +120,15 @@ class Graph {
             //获取start和end顶点的索引
             int startIndex = getVertexIndex(start);
             int endIndex = getVertexIndex(end);
-            //获取start和end对应的终点
-            int startTerminus = getEnd(ends, startIndex);
-            int endTerminus = getEnd(ends, endIndex);
+            //查找start和end是否有相同的终点
+            int startTerminus = findRoot(startIndex, parent);
+            int endTerminus = findRoot(endIndex, parent);
+            //终点不同添加到生成树
             if (startTerminus != endTerminus) {
                 //将边加入到最小生成树数组
-                minTree[index] = data;
-                index++;
-                //将当前顶点的终点信息加入到终点查询表ends
-                ends[startIndex] = endIndex;
+                minTree[index++] = data;
+                //合并两个点
+                unionVertices(startIndex, endIndex, parent, rank);
                 System.out.println("当前加入的边是：" + data);
             }
         }
@@ -149,18 +153,65 @@ class Graph {
     }
 
     /**
-     * 根据当前顶点索引查找其终点
-     * @param ends 保存当前顶点终点的数组
-     * @param i 要查询的顶点坐标
-     * @return
-     */
-    public int getEnd(int[] ends, int i) {
-        while (ends[i] != 0) {
-            //如果当前点有终点，那么用新的点查找终点，一直查找到当前值为0.这时i就是最终的终点
-            //A---->B-----C-----D,在访问A获取下一个终点B的索引，再用B去查查到了C，最后一直查到D就是A最终的终点
-            i = ends[i];
+     * @auther 梁伟
+     * @Description 初始化数组元素为-1
+     * @Date 2020/4/8 6:03
+     * @param parent 要使用的parent数组
+     * @param rank 用来做并查集的压缩路径，减小树的查找高度
+     * @return void
+     **/
+    public void init(int[] parent, int[] rank) {
+        for (int i = 0; i < parent.length; i++) {
+            rank[i] = 0;
+            parent[i] = -1;
         }
-        return i;
+    }
+
+    /**
+     * @auther 梁伟
+     * @Description 查找索引为i的顶点的父节点
+     * @Date 2020/4/8 6:07
+     * @param i 顶点当前索引
+     * @param parent 保存顶点的父节点的数组
+     * @return int
+     **/
+    public int findRoot(int i, int[] parent) {
+        int iRoot = i;
+        while (parent[iRoot] != -1) {
+            iRoot = parent[iRoot];
+        }
+        return iRoot;
+    }
+
+    /**
+     * @auther 梁伟
+     * @Description 合并两个并查集
+     * @Date 2020/4/8 6:08
+     * @Param [x, y] 每个集合的最终父节点
+     * @param rank 保存树的高度
+     * @return int 返回1合并成功，返回1合并失败。合并的两个点在同一个集合时会合并失败
+     **/
+    public int unionVertices(int x, int y, int[] parent, int[] rank) {
+        //找两个点的根节点
+        int xRoot = findRoot(x, parent);
+        int yRoot = findRoot(y, parent);
+        //判断根节点是否在同一个集合
+        if (xRoot == yRoot) {
+            return 0;
+        } else {
+            //哪个点所在的高度高，在高度高的树上的点就是父节点。通过对树高度的压缩
+            //来减小查找根节点的次数
+            if (rank[xRoot] > rank[yRoot]) {
+                parent[yRoot] = xRoot;
+            } else if (rank[yRoot] > rank[xRoot]){
+                parent[xRoot] = yRoot;
+            } else {
+                //当两个相等时，xRoot和yRoot哪个作为根节点都可以，但是需要给作为根节点方的高度加1
+                parent[xRoot] = yRoot;
+                rank[yRoot] = rank[yRoot] + 1;
+            }
+            return 1;
+        }
     }
 }
 
