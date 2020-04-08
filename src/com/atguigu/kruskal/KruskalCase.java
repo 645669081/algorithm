@@ -101,12 +101,12 @@ class Graph {
      */
     public void kruskal() {
         //初始化变量用于检测是否构成环路
-        int edgeNum = vertexs.length;
-        int[] parent = new int[edgeNum];
-        int[] rank = new int[edgeNum];
+        int vertexNum = vertexs.length;
+        int[] parent = new int[vertexNum];
+        int[] rank = new int[vertexNum];
         init(parent, rank);
         //存放已经跟随边加入生成树中的顶点
-        Edata[] minTree = new Edata[vertexs.length];
+        Edata[] minTree = new Edata[vertexNum -1];
         //获取边并对边进行排序
         Edata[] edata = getEdata();
         Arrays.sort(edata);
