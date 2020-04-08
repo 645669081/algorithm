@@ -30,7 +30,7 @@ public class DijkstraAlgorithm {
         graph.show();
         System.out.println("==============================");
 
-        graph.dijkstra(0);
+        graph.dijkstra(6);
     }
 }
 
@@ -77,6 +77,7 @@ class Graph {
         //第一个节点source先要入队
         PriorityQueue<Edata> priorityQueue = new PriorityQueue<>();
         priorityQueue.add(new Edata(source, 0));
+
         int[] seen = new int[vertexs.length];//使用顶点索引对应，0未访问过，1访问过了
         int[] parent = new int[vertexs.length];//使用顶点索引，获取到的是该顶点的前一个顶点
         //初始化所有节点的前驱节点为-1，表示此时没有前驱节点
@@ -88,12 +89,13 @@ class Graph {
         for (int i = 0; i < distance.length; i++) {
             distance[i] = 65535;
         }
-        distance[0] = 0;
+        distance[source] = 0;
 
         while (!priorityQueue.isEmpty()) {
             Edata pair = priorityQueue.poll();
             int dist = pair.distance;
             int vertex = pair.vertex;
+            //将当前点pair标记为已访问
             seen[vertex] = 1;
             //获取邻接点
             List<Edata> nodes = getAdjoinInfo(vertex);
